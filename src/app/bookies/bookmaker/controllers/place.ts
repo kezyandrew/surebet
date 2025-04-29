@@ -1,4 +1,10 @@
-import { PlaceResponse } from '@betcris/models';
+// import { PlaceResponse } from '@betcris/models';
+// Define PlaceResponse type locally since it's missing
+interface PlaceResponse {
+  ErrorMessage?: string;
+  [key: string]: any;
+}
+
 import { BookieName } from '@models';
 import { genId, randomInt, screenshot, waitForResponse } from '@utils';
 import { GhostCursor } from 'ghost-cursor';

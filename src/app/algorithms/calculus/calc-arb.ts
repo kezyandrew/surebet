@@ -3,10 +3,14 @@ import { BookieBet } from '@models';
 import { rates } from '@money/rates';
 import { Money } from '@money/types';
 import { convert } from 'cashify';
+import { IBookieBase } from '@broker/store/store';
 
 const defaultOptions = {
   round: 10,
-  maximize: undefined,
+  maximize: undefined as {
+    bookie: Bookie | IBookieBase;
+    stake: Money;
+  },
 };
 
 /**
@@ -22,7 +26,7 @@ export function calcArb(
   options: {
     round: number;
     maximize?: {
-      bookie: Bookie;
+      bookie: Bookie | IBookieBase;
       stake: Money;
     };
   } = defaultOptions,
@@ -94,7 +98,7 @@ export function calcArb(
       currency: b.bookie.currency.code,
       bet: b.bet,
       bookie: b.bookie,
-      viable: profits[index] >= 2.5
+      viable: profits[index] >= 2.5,
     };
   });
 }
@@ -105,7 +109,11 @@ export function calcArb(
  * @param invest
  * @param bookie
  */
-function currencyExchange(unitStake: number, invest: Money, bookie: Bookie) {
+function currencyExchange(
+  unitStake: number,
+  invest: Money,
+  bookie: Bookie | IBookieBase,
+) {
   return convert(unitStake, {
     from: invest.currency.code,
     to: bookie.currency.code,

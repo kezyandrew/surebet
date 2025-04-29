@@ -5,7 +5,7 @@ import { randomInt, sleep } from '@utils';
 import { createCursor, GhostCursor } from 'ghost-cursor';
 import { Browser, ElementHandle, Page } from 'puppeteer';
 
-export class TennisH2H {
+export class SoccerH2H {
   private static page: Page;
   private static cursor: GhostCursor;
 
@@ -15,20 +15,16 @@ export class TennisH2H {
    * @param browser
    */
   public static async get(page: Page, browser: Browser) {
-    console.log(
-      '[IMPORTANT] TennisH2H is now modified to test soccer - this is a temporary workaround',
-    );
     if (!this.page) {
       this.cursor = createCursor(page);
       // Page should already come loaded
-      this.page = await this.navigateTo(page, 'TENNIS', this.cursor);
+      console.log('[Bookmaker] Navigating to soccer section');
+      this.page = await this.navigateTo(page, 'SOCCER', this.cursor);
       this.page.setDefaultTimeout(8000);
     }
 
     // Get rows
-    console.log(
-      '[Bookmaker] Searching for matches (TENNIS CLASS MODIFIED TO NAVIGATE TO SOCCER)...',
-    );
+    console.log('[Bookmaker] Searching for soccer matches...');
     const _rows = await this.eventRows(this.page);
 
     // Create events
@@ -43,62 +39,17 @@ export class TennisH2H {
    * @param page
    */
   private static async eventRows(page: Page) {
-    // This is the original tennis selector
     const matchesQuery = 'app-schedule-game-american';
 
-    // Also try these selectors for soccer matches
-    const soccerQueries = [
-      'app-schedule-game-american',
-      '.event-item',
-      '.match-row',
-      '.soccer-match',
-      '.event-row',
-      '.game-item',
-    ];
-
-    console.log(
-      `[Bookmaker] Looking for match rows with original query: ${matchesQuery}`,
-    );
     try {
       await page.waitForSelector(matchesQuery, {
         timeout: 8000,
       });
-      const rows = await page.$$(matchesQuery);
-      console.log(
-        `[Bookmaker] Found ${rows.length} matches with the tennis selector`,
-      );
-      if (rows.length > 0) {
-        return rows;
-      }
+      return page.$$(matchesQuery);
     } catch (err) {
-      console.log(
-        `[Bookmaker] No matches found with tennis selector: ${matchesQuery}`,
-      );
+      console.log(BookieName.Bookmaker, 'No soccer events');
+      return [];
     }
-
-    // If original query failed, try soccer queries
-    for (const query of soccerQueries) {
-      console.log(`[Bookmaker] Trying soccer selector: ${query}`);
-      try {
-        await page.waitForSelector(query, {
-          timeout: 3000,
-        });
-        const rows = await page.$$(query);
-        console.log(
-          `[Bookmaker] Found ${rows.length} matches with soccer selector: ${query}`,
-        );
-        if (rows.length > 0) {
-          return rows;
-        }
-      } catch (err) {
-        console.log(
-          `[Bookmaker] No matches found with soccer selector: ${query}`,
-        );
-      }
-    }
-
-    console.log('[Bookmaker] No soccer events found with any selector');
-    return [];
   }
 
   /**
@@ -168,7 +119,7 @@ export class TennisH2H {
   }
 
   /**
-   * Loads tennis matches in the browser
+   * Loads soccer matches in the browser
    * @param page
    * @param section ("cat" property)
    * @returns
@@ -178,11 +129,8 @@ export class TennisH2H {
     section: string,
     cursor: GhostCursor,
   ) {
-    console.log(
-      'REDIRECTING: Using soccer section instead of tennis for testing!',
-    );
-    // Override section to use soccer instead of tennis
-    // Soccer section testing - using multiple possible selector formats
+    // The actual selector value might be different for soccer
+    // Bookmaker might use different cat attribute values for soccer
     const possibleSelectors = [
       `.sports-controls [cat="SOCCER"]`,
       `.sports-controls [cat="soccer"]`,
@@ -266,15 +214,9 @@ export class TennisH2H {
       );
     }
 
-    // If we can't find soccer controls, fall back to original behavior
-    console.log('[Bookmaker] Falling back to original tennis selector');
-    const control = await page.waitForSelector(
-      `.sports-controls [cat="${section}"]`,
+    console.log(
+      '[Bookmaker] Could not find soccer section, continuing with current page',
     );
-
-    await cursor.move(control);
-    await control.click({ delay: randomInt(10, 50) });
-    await sleep(3000);
     return page;
   }
 }

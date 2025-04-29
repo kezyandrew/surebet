@@ -1,15 +1,15 @@
 import { WSBroker } from '@broker/broker';
 import { InstanceStatus } from '@broker/models';
 import { WSStore } from '@broker/store';
-import { BetEvent } from '@models';
 import { Currency } from '@money/types';
-import { Browser } from 'puppeteer';
+import { SeleniumBrowser } from '../browser/selenium-browser';
 import { container } from 'tsyringe';
 import { v4 } from 'uuid';
 import { BookieName } from '../models/defs/bookie-name.enum';
 import { Credentials } from '../models/types/credentials';
+import { BetEvent } from '@models';
 
-export abstract class Bookie {
+export abstract class SeleniumBookie {
   public id: string;
   public wantsToMaximize = false;
   public paused = false;
@@ -28,19 +28,14 @@ export abstract class Bookie {
     };
   };
 
-  /**
-   * Each bookie instance has its browser instance
-   * @param browser Browser instance
-   * @param currency Base initial bookie currency
-   */
   constructor(
-    public browser: Browser,
+    public browser: SeleniumBrowser,
     public currency: Currency,
   ) {
     // Assign unique id for this instance
     this.id = v4();
 
-    // Resolve stire
+    // Resolve store
     this.store = container.resolve(WSStore);
     this.store.addInstance(this);
 
@@ -85,12 +80,6 @@ export abstract class Bookie {
     this.authenticated = await this._login(credentials);
     return this.authenticated;
   }
-
-  /**
-   * Cleans betslip
-   * @param credentials
-   */
-  // public abstract clean(): Promise<void>;
 
   /**
    * Retrieves bookie balance

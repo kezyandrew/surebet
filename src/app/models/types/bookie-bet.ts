@@ -1,4 +1,5 @@
 import { Bookie } from '@bookies';
+import { IBookieBase } from '@broker/store/store';
 import { Bet } from '@models';
 
-export type BookieBet = { bookie: Bookie; bet: Bet };
+export type BookieBet = { bookie: Bookie | IBookieBase; bet: Bet };

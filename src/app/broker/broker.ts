@@ -8,16 +8,29 @@ import { InstanceStatus } from './models';
 import { ArberStatus } from './models/arber-instance';
 import * as strategies from './strategies';
 
+// Change to false to disable WebSocket functionality
+const ENABLE_WEBSOCKET = false;
 const wsServerUrl = 'ws://localhost:8080';
 
 @singleton()
 export class WSBroker {
-  private ws: WebSocket;
+  private ws: WebSocket | null = null;
   private ready$ = new BehaviorSubject(false);
 
   constructor() {
-    this.ws = new WebSocket(wsServerUrl, { followRedirects: true });
-    this.listen();
+    if (ENABLE_WEBSOCKET) {
+      try {
+        this.ws = new WebSocket(wsServerUrl, { followRedirects: true });
+        this.listen();
+      } catch (error) {
+        console.warn('WebSocket connection failed, continuing without it');
+        this.ready$.next(true);
+      }
+    } else {
+      // If WebSockets are disabled, mark as ready immediately
+      console.log('WebSocket functionality disabled');
+      this.ready$.next(true);
+    }
   }
 
   /**
@@ -39,6 +52,8 @@ export class WSBroker {
    * Starts listening to messages
    */
   private listen() {
+    if (!this.ws) return;
+
     // Connection
     this.ws.on('open', () => {
       this.ready$.next(true);
@@ -47,6 +62,12 @@ export class WSBroker {
 
     // Message
     this.ws.on('message', this.handleIncoming.bind(this));
+
+    // Error handling
+    this.ws.on('error', (err) => {
+      console.warn('WebSocket error:', err.message);
+      this.ready$.next(true); // Mark as ready anyway
+    });
   }
 
   /**
@@ -77,7 +98,7 @@ export class WSBroker {
    */
   public send(message: any) {
     if (this.ready$.value) {
-      this.ws.send(JSON.stringify(message));
+      this.ws?.send(JSON.stringify(message));
     }
   }
 

@@ -1,4 +1,5 @@
 import { Bookie } from '@bookies';
+import { IBookieBase } from '@broker/store/store';
 import { Bet } from '@models';
 
 export interface Arb {
@@ -7,7 +8,7 @@ export interface Arb {
   profit: string;
   currency: string;
   bet: Bet;
-  bookie: Bookie;
+  bookie: Bookie | IBookieBase;
   viable: boolean;
 }
 

@@ -1,5 +1,6 @@
 import { calcArb } from '@algorithms';
 import { Bookie } from '@bookies';
+import { IBookieBase } from '@broker/store/store';
 import { ArbGroup, BookieBet } from '@models';
 import { Money } from '@money/types';
 import { isSharpBookie } from '@utils';
@@ -80,8 +81,8 @@ export function matchesToArbs(
  * @param maximizeTo
  * @returns
  */
-function makeMaximizeOptions(bookieToMaximize: Bookie): {
-  bookie: Bookie;
+function makeMaximizeOptions(bookieToMaximize: Bookie | IBookieBase): {
+  bookie: Bookie | IBookieBase;
   stake: Money;
 } {
   if (bookieToMaximize) {

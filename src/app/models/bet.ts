@@ -1,6 +1,12 @@
 import * as puppeteer from 'puppeteer';
 import { Observable } from 'rxjs';
-import { BookieReference } from '../bookies/playdoit/models';
+// import { BookieReference } from '../bookies/playdoit/models';
+// Define BookieReference locally
+interface BookieReference {
+  id: string;
+  [key: string]: any;
+}
+
 import { Genetic } from '../genetics';
 import { BookieName } from './defs/bookie-name.enum';
 import { PostulateResult } from './types/postulate-result';
@@ -9,7 +15,10 @@ export type ExchangeType = 'lay' | 'back';
 
 export interface Bet extends PartialBet {
   element: puppeteer.ElementHandle<Element>;
-  postulate: (amount: number | string, ...args: any[]) => Promise<PostulateResult>;
+  postulate: (
+    amount: number | string,
+    ...args: any[]
+  ) => Promise<PostulateResult>;
   place: () => Promise<boolean>;
   clean?: () => Promise<boolean>;
   track?: (polling?: number) => Observable<Bet>;

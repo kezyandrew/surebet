@@ -2,6 +2,7 @@ import { Bookie } from '@bookies';
 import { WSBroker } from '@broker/broker';
 import { ArberStatus } from '@broker/models/arber-instance';
 import { WSStore } from '@broker/store';
+import { IBookieBase } from '@broker/store/store';
 import { BookieName, BookieRetrieverTuple } from '@models';
 import { Money } from '@money/types';
 import { Subject } from 'rxjs';
@@ -14,13 +15,13 @@ export abstract class Arber {
   public closed = new Subject<boolean>();
 
   // Broker
-  // protected wsBroker: WSBroker;
+  protected wsBroker: WSBroker;
 
   // Block rxjs chain
   protected blocked = false;
 
   // Bookie Childs intances
-  protected instances: Bookie[] = [];
+  protected instances: (Bookie | IBookieBase)[] = [];
   protected store: WSStore;
 
   constructor(
@@ -45,13 +46,13 @@ export abstract class Arber {
     this.store.addArber(this);
 
     // Notify WS Broker
-    // this.wsBroker = container.resolve(WSBroker);
-    // this.wsBroker.arberCreated(
-    //   this.id,
-    //   this.constructor.name,
-    //   this.instances.map((i) => i.id),
-    //   this.investment,
-    // );
+    this.wsBroker = container.resolve(WSBroker);
+    this.wsBroker.arberCreated(
+      this.id,
+      this.constructor.name,
+      this.instances.map((i) => i.id),
+      this.investment,
+    );
   }
 
   /**
@@ -111,7 +112,7 @@ export abstract class Arber {
    *
    * @optional bookies Bookies to set with postulate state
    */
-  public notifyPostulating(bookies: Bookie[] = []) {
+  public notifyPostulating(bookies: (Bookie | IBookieBase)[] = []) {
     bookies.forEach((b) => b.postulating());
     this.wsBroker.arberStatusChanged(this.id, ArberStatus.Postulating);
   }
@@ -121,7 +122,7 @@ export abstract class Arber {
    *
    * @optional bookies Bookies to set with postulate state
    */
-  public notifyPlacing(bookies: Bookie[] = []) {
+  public notifyPlacing(bookies: (Bookie | IBookieBase)[] = []) {
     bookies.forEach((b) => b.placing());
     this.wsBroker.arberStatusChanged(this.id, ArberStatus.Placing);
   }
@@ -131,7 +132,7 @@ export abstract class Arber {
    *
    * @optional bookies Bookies to set with postulate state
    */
-  public notifyPlaced(bookies: Bookie[] = []) {
+  public notifyPlaced(bookies: (Bookie | IBookieBase)[] = []) {
     bookies.forEach((b) => b.placed());
     this.wsBroker.arberStatusChanged(this.id, ArberStatus.Placed);
   }
@@ -141,7 +142,7 @@ export abstract class Arber {
    *
    * @optional bookes Bookies to set to initial state
    */
-  public resetStatus(bookies: Bookie[] = []) {
+  public resetStatus(bookies: (Bookie | IBookieBase)[] = []) {
     bookies.forEach((b) => b.resetStatus());
     this.wsBroker.arberStatusChanged(this.id, ArberStatus.Created);
   }
